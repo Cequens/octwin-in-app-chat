@@ -1,0 +1,48 @@
+# Installed npm packages: `npm ci` brings them back.
+node_modules/
+
+# The server's secrets (identity secret, unread-alert secret). Never commit.
+.env
+# The Firebase service account the server sends pushes with. Never commit.
+service-account.json
+# Your Firebase config for Android. It belongs to your Firebase project, not this sample.
+google-services.json
+# Your Firebase config for iOS. It belongs to your Firebase project, not this sample.
+GoogleService-Info.plist
+
+# Flutter build output.
+flutter/build/
+# Flutter tool cache.
+flutter/.dart_tool/
+# Made by `flutter create`: each developer generates their own.
+flutter/android/
+# Made by `flutter create`: each developer generates their own.
+flutter/ios/
+# Made by `flutter create`: tool metadata.
+flutter/.metadata
+
+# React Native native projects: made by the React Native CLI, not part of the sample.
+react-native/android/
+# React Native native projects: made by the React Native CLI, not part of the sample.
+react-native/ios/
+
+# Gradle cache, if you build the Android files in place.
+android/.gradle/
+# Gradle build output.
+android/**/build/
+# Your local Android SDK path.
+local.properties
+# Android Studio settings.
+.idea/
+
+# Xcode build output.
+ios/build/
+# Xcode build cache.
+DerivedData/
+# Your personal Xcode settings.
+xcuserdata/
+
+# macOS folder metadata.
+.DS_Store
+# Windows thumbnail cache.
+Thumbs.db

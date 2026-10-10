@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  NOT a complete Info.plist. Add these keys to your app's Info.plist, or in Xcode:
+  target -> Info -> Custom iOS Target Properties.
+  iOS shows each text to the user the first time the chat asks for that thing.
+-->
+<plist version="1.0">
+<dict>
+    <!-- Voice notes in the chat. -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>The chat uses the microphone to record voice messages.</string>
+    <!-- "Take photo" in the chat's attach menu. -->
+    <key>NSCameraUsageDescription</key>
+    <string>The chat uses the camera to send a photo.</string>
+    <!-- "Photo library" in the chat's attach menu. -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>The chat lets you send photos from your library.</string>
+</dict>
+</plist>

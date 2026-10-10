@@ -1,0 +1,33 @@
+{
+  "name": "octwin-in-app-chat-react-native",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The octwin.ai AI Agent chat inside a React Native app, with a push when a message waits unseen.",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint --ext .ts,.tsx ."
+  },
+  "dependencies": {
+    "@react-native-firebase/app": "26.4.0",
+    "@react-native-firebase/messaging": "26.4.0",
+    "@react-navigation/native": "7.5.0",
+    "@react-navigation/native-stack": "7.20.0",
+    "react": "19.2.3",
+    "react-native": "0.87.1",
+    "react-native-safe-area-context": "5.10.1",
+    "react-native-screens": "4.29.0",
+    "react-native-webview": "14.0.1"
+  },
+  "devDependencies": {
+    "@react-native/eslint-config": "0.87.1",
+    "@react-native/typescript-config": "0.87.1",
+    "@types/react": "^19.2.0",
+    "eslint": "^8.19.0",
+    "prettier": "2.8.8",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">= 22.11.0"
+  }
+}

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Merge these entries into your app's AndroidManifest.xml.
+  If you started from Android Studio's "Empty Activity" project, keep its <application>
+  attributes (icon, label, theme) and add the <activity>, <service> and <meta-data> below.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- The chat is a web page. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Voice notes. The app asks the user at the moment the chat needs the mic. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Android 13 and newer: permission to show the push notification. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application>
+
+        <!--
+          The chat screen. It is the launcher here so the sample runs on its own.
+          In your app, start it from a "Chat with us" button instead, and from your
+          launcher activity when it was opened by a chat push (see ChatMessagingService).
+        -->
+        <activity
+            android:name=".ChatActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Receives the unread-message pushes from your server, through FCM. -->
+        <service
+            android:name=".ChatMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Background pushes, shown by Android itself, use this channel (see CHAT_CHANNEL_ID). -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="chat" />
+
+    </application>
+</manifest>

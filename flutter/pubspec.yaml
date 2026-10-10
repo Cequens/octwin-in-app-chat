@@ -1,0 +1,33 @@
+name: octwin_in_app_chat
+description: The octwin.ai AI Agent chat inside a Flutter app, with a push when a message waits unseen.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # The chat runs in a WebView. The two platform packages give the Android and iOS
+  # extras: the file chooser (Android) and inline media playback (iOS).
+  webview_flutter: ^4.14.1
+  webview_flutter_android: ^4.14.1
+  webview_flutter_wkwebview: ^3.27.0
+  # Push notifications.
+  firebase_core: ^4.15.0
+  firebase_messaging: ^16.7.0
+  # Calls to your server (../server).
+  http: ^1.6.0
+  # Android only: attach a photo or PDF, and ask for the microphone for voice notes.
+  file_picker: ^13.1.0
+  permission_handler: ^13.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

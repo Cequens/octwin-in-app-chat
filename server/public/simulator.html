@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>In-app chat simulator</title>
+  <!--
+    "Your own page" without a phone.
+
+    The mobile samples open the hosted app page (https://octwin.ai/c/app/<widgetId>).
+    This page shows the other way: load widget.js yourself and call PlatformChat.mount.
+    Either way the rule is the same: tell the chat when it is on screen and when it is not.
+  -->
+  <style>
+    :root { color-scheme: light dark; --line: #8884; --accent: #2f6fed; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.45 system-ui, sans-serif; background: Canvas; color: CanvasText; }
+    main { display: grid; gap: 24px; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+    @media (max-width: 800px) { main { grid-template-columns: minmax(0, 1fr); } }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    p { margin: 0 0 12px; }
+    .phone { position: relative; height: 640px; border: 10px solid #222; border-radius: 32px; overflow: hidden; background: #f2efeb; }
+    #chat { height: 100%; }
+    .cover { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 24px; background: #222d; color: #fff; font-weight: 600; }
+    .phone.is-hidden .cover { display: grid; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+    input { font: inherit; padding: 6px 8px; width: 120px; }
+    button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: ButtonFace; color: ButtonText; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    #toggle { width: 100%; padding: 16px; font-size: 18px; font-weight: 700; border: 0; color: #fff; background: #1a7f37; }
+    #toggle.off { background: #b42318; }
+    #log { height: 320px; overflow: auto; margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font: 13px/1.5 ui-monospace, monospace; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+<main>
+  <section>
+    <div class="phone" id="phone">
+      <div id="chat"></div>
+      <div class="cover">The chat is hidden.<br>A new message now counts as NOT seen.</div>
+    </div>
+  </section>
+
+  <section>
+    <h1>In-app chat simulator</h1>
+    <p>Mount the chat, send a message, then hide the chat before the AI Agent answers.
+       If the answer stays unseen for about 15 seconds, octwin.ai calls your unread-alert URL,
+       and this server prints the push it would send.</p>
+
+    <div class="row">
+      <label>User id <input id="userId" value="42"></label>
+      <button id="start">Start chat</button>
+      <button id="device" title="So an unread alert has a phone to push to">Register a fake phone</button>
+    </div>
+
+    <button id="toggle" disabled>Chat on screen</button>
+    <p style="margin-top:8px">Switching browser tabs hides the chat too, like an app going to the background.</p>
+
+    <pre id="log"></pre>
+  </section>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const log = (text) => { $('log').textContent += `${new Date().toLocaleTimeString()}  ${text}\n`; $('log').scrollTop = 1e9; };
+
+  let chat = null;      // what PlatformChat.mount returned: { unmount(), setActive(active) }
+  let onScreen = true;  // the big toggle
+
+  async function postJson(path, body) {
+    const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error(`${path} answered ${res.status}`);
+    return res.status === 204 ? null : res.json();
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error(`could not load ${src}`));
+      document.head.appendChild(script);
+    });
+  }
+
+  // The chat counts as seen only when the toggle says "on screen" AND this tab is visible.
+  function reportActive() {
+    const active = onScreen && !document.hidden;
+    $('phone').classList.toggle('is-hidden', !active);
+    if (!chat) return;
+    if (typeof chat.setActive !== 'function') return log('This widget.js has no setActive() yet.');
+    chat.setActive(active);
+    log(`setActive(${active})`);
+  }
+
+  $('start').onclick = async () => {
+    try {
+      $('start').disabled = true;
+      const config = await (await fetch('/simulator-config.json')).json();
+      if (!config.widgetId || !config.tenantSlug || !config.projectSlug) {
+        throw new Error('Set WIDGET_ID, TENANT_SLUG and PROJECT_SLUG in server/.env');
+      }
+      if (!window.PlatformChat) {
+        await loadScript(`${config.octwinUrl}/widget.js`);
+        log(`loaded ${config.octwinUrl}/widget.js`);
+      }
+
+      // Your server signs who the user is. The secret never reaches this page.
+      const id = await postJson('/chat/identity', { userId: $('userId').value });
+      log(`signed as ${id.from}, valid until ${new Date(JSON.parse(id.identity).exp * 1000).toLocaleTimeString()}`);
+
+      chat?.unmount();
+      chat = window.PlatformChat.mount($('chat'), {
+        tenantSlug: config.tenantSlug,
+        projectSlug: config.projectSlug,
+        widgetId: config.widgetId,
+        baseUrl: config.octwinUrl,
+        from: id.from,
+        identity: id.identity,
+        identitySig: id.identity_sig,
+      });
+      log('chat mounted');
+      $('toggle').disabled = false;
+      reportActive();
+    } catch (err) {
+      log(`ERROR: ${err.message}`);
+    } finally {
+      $('start').disabled = false;
+    }
+  };
+
+  $('device').onclick = async () => {
+    try {
+      const userId = $('userId').value;
+      await postJson('/devices', { userId, token: `simulator-token-${userId}` });
+      log(`registered a fake phone for user ${userId}. With DRY_RUN=1 the server prints the push.`);
+    } catch (err) {
+      log(`ERROR: ${err.message}`);
+    }
+  };
+
+  $('toggle').onclick = () => {
+    onScreen = !onScreen;
+    $('toggle').textContent = onScreen ? 'Chat on screen' : 'Chat hidden';
+    $('toggle').classList.toggle('off', !onScreen);
+    reportActive();
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    log(`browser tab ${document.hidden ? 'hidden' : 'visible'}`);
+    reportActive();
+  });
+</script>
+</body>
+</html>
