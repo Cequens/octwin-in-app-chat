@@ -104,6 +104,8 @@ export function ChatScreen() {
       </View>
     );
   }
+  // The chat keeps its message box above the keyboard only if this WebView gets smaller when
+  // the keyboard opens. iOS does it; on Android, see "The keyboard (Android)" in the README.
   return (
     <WebView
       ref={webviewRef}

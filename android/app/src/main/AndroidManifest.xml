@@ -20,9 +20,14 @@
           In your app, start it from a "Chat with us" button instead, and from your
           launcher activity when it was opened by a chat push (see ChatMessagingService).
         -->
+        <!--
+          adjustResize: on Android 10 and older, the app hears the keyboard's size only with
+          this set. ChatActivity.fitToVisibleScreen then makes room for the keyboard.
+        -->
         <activity
             android:name=".ChatActivity"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

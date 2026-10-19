@@ -59,6 +59,14 @@ In Xcode, also turn on the **Push Notifications** capability, and upload your AP
 
 Attaching a file needs no extra code: `react-native-webview` opens the file chooser on Android, and iOS does it by itself.
 
+## The keyboard (Android)
+
+The chat keeps its message box above the keyboard by itself, but only if the `WebView` gets smaller when the keyboard opens. The page cannot see the keyboard, only its own size. iOS does this for you.
+
+On Android, the activity needs `android:windowSoftInputMode="adjustResize"` in `android/app/src/main/AndroidManifest.xml`. If your app draws edge to edge (Android 15 and newer do it for apps that target them), Android no longer shrinks the app for the keyboard. Then the chat screen must make the room itself, for example with `KeyboardAvoidingView` or a keyboard library.
+
+To check it: open the chat on an Android phone and tap the message box. The box must stay above the keyboard.
+
 ## The one rule
 
 Call `window.octwin.setActive(false)` when the chat is not on screen, and `setActive(true)` when it is again. [`ChatScreen.tsx`](src/ChatScreen.tsx) does it in two places:

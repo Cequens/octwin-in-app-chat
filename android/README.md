@@ -8,7 +8,7 @@ This folder holds the code only. It is **not** a full Gradle project. Add these 
 
 | File | What it does |
 |---|---|
-| [`ChatActivity.kt`](app/src/main/java/ai/octwin/sample/ChatActivity.kt) | The chat in a `WebView`. Tells the page when the chat is on screen. Listens on `OctwinBridge`. Opens the file chooser. Gives the page the microphone. |
+| [`ChatActivity.kt`](app/src/main/java/ai/octwin/sample/ChatActivity.kt) | The chat in a `WebView`. Keeps it clear of the status bar and the keyboard. Tells the page when the chat is on screen. Listens on `OctwinBridge`. Opens the file chooser. Gives the page the microphone. |
 | [`ChatMessagingService.kt`](app/src/main/java/ai/octwin/sample/ChatMessagingService.kt) | Firebase Cloud Messaging: sends the token to your server, shows the notification, opens the chat on tap. |
 | [`SessionClient.kt`](app/src/main/java/ai/octwin/sample/SessionClient.kt) | Calls your server: `POST /chat/session` and `POST /devices`. |
 | [`AndroidManifest.xml`](app/src/main/AndroidManifest.xml) | The permissions, the activity, the messaging service. |
@@ -44,6 +44,16 @@ override fun onResume() {
 `onPause` runs when the app goes to the background **and** when another screen covers the chat. On Android you must call **both** `webView.onPause()` and `setActive(false)`: a WebView does not pause or hide its page when the app leaves the screen. Without them, octwin.ai thinks the user saw every message, and it never sends an unread alert.
 
 If your chat lives in a Fragment or a Compose screen, make the same calls in its own lifecycle.
+
+## The keyboard and the screen edges
+
+The chat keeps its message box above the keyboard by itself, but only if the `WebView` gets smaller when the keyboard opens. The page cannot see the keyboard, only its own size.
+
+Android 15 and newer draw an app edge to edge: under the status bar, the navigation bar and the keyboard. They do not shrink the app for the keyboard. So [`ChatActivity.kt`](app/src/main/java/ai/octwin/sample/ChatActivity.kt) puts the `WebView` in a frame that leaves room for all three (`fitToVisibleScreen`), and calls `enableEdgeToEdge()` so older Android versions work the same way. The manifest sets `android:windowSoftInputMode="adjustResize"`: on Android 10 and older, the app hears the keyboard's size only with it.
+
+Without this, the keyboard covers the message box, and the chat's header sits under the status bar.
+
+To check it: open the chat and tap the message box. The box must stay above the keyboard.
 
 ## The bridge
 

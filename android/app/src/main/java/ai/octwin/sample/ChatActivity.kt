@@ -9,13 +9,19 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
@@ -58,8 +64,9 @@ class ChatActivity : ComponentActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge() // the same layout on every Android version — see fitToVisibleScreen
         webView = WebView(this)
-        setContentView(webView)
+        setContentView(fitToVisibleScreen(webView))
 
         webView.settings.javaScriptEnabled = true // the chat is a web app
         webView.settings.domStorageEnabled = true // it keeps its state in localStorage
@@ -71,6 +78,34 @@ class ChatActivity : ComponentActivity() {
         askForNotificationPermission()
         registerForPush()
         loadChat()
+    }
+
+    // ---- Fitting the screen ----
+
+    /**
+     * The WebView inside a frame that leaves room for the status bar, the navigation bar,
+     * a camera cutout and the keyboard.
+     *
+     * The chat keeps its message box above the keyboard by itself, but only if the WebView
+     * gets smaller when the keyboard opens: the page cannot see the keyboard, only its own
+     * size. Android 15 and newer draw an app edge to edge, under the bars and the keyboard,
+     * and do not shrink it for the keyboard. So the app makes the room itself.
+     * enableEdgeToEdge() in onCreate makes older Android versions work the same way.
+     */
+    private fun fitToVisibleScreen(content: View): View {
+        val frame = FrameLayout(this)
+        frame.addView(content, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        ViewCompat.setOnApplyWindowInsetsListener(frame) { view, insets ->
+            val room =
+                insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or
+                        WindowInsetsCompat.Type.displayCutout() or
+                        WindowInsetsCompat.Type.ime(),
+                )
+            view.setPadding(room.left, room.top, room.right, room.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
+        return frame
     }
 
     // ---- Is the chat on screen? ----
